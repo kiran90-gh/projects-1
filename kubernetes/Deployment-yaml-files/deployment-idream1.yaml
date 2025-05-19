@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: idream1-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: idream1
+  template:
+    metadata:
+      labels:
+        app: idream1
+    spec:
+      containers:
+        - name: demo-app
+          image: docker.io/satyadocckerhub/demo2-app:latest
+          ports:
+            - containerPort: 8080

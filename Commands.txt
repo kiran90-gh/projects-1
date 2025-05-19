@@ -1,0 +1,57 @@
+USING GCP VM INSTANCE WITH CENTOS AND GKE STEPS 
+========================================================
+sudo yum update -y
+sudo yum install wget tar -y
+wget https://download.oracle.com/java/21/latest/jdk-21_linux-x64_bin.tar.gz
+tar -xzf jdk-21_linux-x64_bin.tar.gz
+sudo mv jdk-21.0.7 /usr/lib/jvm/jdk-21
+---------------------------------------(single command)--
+sudo tee /etc/profile.d/jdk21.sh > /dev/null <<EOF
+export JAVA_HOME=/usr/lib/jvm/jdk-21
+export PATH=\$JAVA_HOME/bin:\$PATH
+EOF
+---------------------------------------------------------
+source /etc/profile.d/jdk21.sh
+java -version
+sudo yum install maven -y
+mvn -version
+sudo yum install git -y
+git --version
+git clone https://github.com/sssbabu/Demo2.git
+sudo yum install docker -y
+cd Demo2/
+mvn clean install
+vi Dockerfile
+podman login registry.redhat.io
+podman build -t satyadocckerhub/demo2-app:latest .
+podman images
+podman login docker.io
+podman push docker.io/satyadocckerhub/demo2-app:latest
+==============================================================
+GKE COMMANDS :
+------------------------
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.9.0/deploy/static/provider/cloud/deploy.yaml
+kubectl create -f deployment-idream1.yaml 
+kubectl create -f deployment-idream2.yaml 
+kubectl create -f deployment-idream3.yaml 
+kubectl create -f service-idream1.yaml 
+kubectl create -f service-idream2.yaml 
+kubectl create -f service-idream3.yaml 
+kubectl create -f idream-ingress.yaml 
+kubectl get ingress idream-ingress
+kubectl get svc idream1-service -o yaml
+kubectl get pods -l app=idream1
+kubectl get svc -n ingress-nginx
+----------------------------------
+To open in a browser using the domain idream.demo.com, you need to map it to the IP on your local machine.
+On Windows:
+Edit    C:\Windows\System32\drivers\etc\hosts as Administrator, and add:
+<EXTERNAL-IP>    idream.demo.com
+note:you can get external ip from this command (kubectl get svc -n ingress-nginx) 
+Then open in a browser:
+-----------------------------------
+http://idream.demo.com/idream1
+http://idream.demo.com/idream2
+http://idream.demo.com/idream3
+or
+curl -H "Host: idream.demo.com" http://<EXTERNAL-IP>/idream1
